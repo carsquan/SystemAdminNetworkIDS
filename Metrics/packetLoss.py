@@ -1,11 +1,12 @@
 from pythonping import ping
+import asyncio
+import os
 
-print(ping('74.125.136.113', timeout=1, count=1,))
 
 pkt_loss = 0
 pkt_total = 0
 
-async def packetLoss():
+def packetLoss():
     global pkt_loss
     global pkt_total
 
@@ -13,10 +14,9 @@ async def packetLoss():
   
     pkt_total+= 1
   
-    if str[2] == 'q':
+    if not str.success:
         pkt_loss+= 1
 
+    print("asd")
     # returns rate of packet loss
-    return pkt_loss / pkt_total
-
-
+    return [pkt_loss / pkt_total,str.rtt_avg_ms]

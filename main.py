@@ -1,3 +1,6 @@
-from Metrics.arp import arpPing
 
-arpPing()
+from Metrics.arp import arpPing
+from GUI.gui import runGUI,App
+
+app = App()
+#arpPing()
