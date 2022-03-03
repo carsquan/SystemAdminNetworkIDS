@@ -1,6 +1,7 @@
 # !/usr/bin/python3  
 import imp
-from tkinter import *  
+from tkinter import *
+from turtle import width  
 from Metrics.packetLoss import packetLoss
 import asyncio
 
@@ -10,15 +11,20 @@ import asyncio
 import tkinter as tk
 import time
 
+pingTime = 10000
+height = 320
+width = 640
+
 class App():
     def __init__(self):
         self.root = tk.Tk()
+        self.root.geometry(f"{width}x{height}")
         self.label = tk.Label(text="")
         self.packetL = tk.Label(text="0.00%")
-        self.ping = tk.Label(text="0.00%")
-        self.label.pack()
-        self.packetL.pack()
-        self.ping.pack()
+        self.ping = tk.Label(text="0")
+        self.label.place(x=width-40,y=height-20)
+        self.packetL.place(x=0,y=height-20)
+        self.ping.place(x=130,y=height-20)
         self.update_clock()
         self.updatePKLoss()
         self.root.mainloop()
@@ -31,35 +37,9 @@ class App():
     def updatePKLoss(self):
         pk = packetLoss()
         new_text = f"Packet Loss: {pk[0]}%"
-        ping = f"Ping: {pk[1]}"
+        ping = f"Ping: {pk[1]} ms"
         self.packetL.configure(text=new_text)
         self.ping.configure(text=ping)
-        self.root.after(10000, self.updatePKLoss)
+        self.root.after(pingTime, self.updatePKLoss)
 
 
-def runGUI():
-
-    top = Tk()
-    t = Label(top)
-    t.pack()
-    e1 = Entry(top)
-    e1.pack()
-    e2 = Entry(top)
-    e2.pack()
-
-    def my_after(): 
-        new_text = packetLoss()
-
-        t.config(text=new_text)
-
-        # call again after 100 ms
-        top.after(10, my_after)
-        
-    # call first time 
-    my_after()
-
-    # call first time after 100 ms
-    #top.after(100, my_after)
-
-    top.mainloop()
-  
