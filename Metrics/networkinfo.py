@@ -19,9 +19,9 @@ async def sniff():
     packet = s.recvfrom(2048)
     ethernet_header = packet[0][0:14]
     eth_header = struct.unpack("!6s6s2s", ethernet_header)
-    dest_mac = str(binascii.hexlify(eth_header[0])) 
-    src_mac = str(binascii.hexlify(eth_header[1]))
-    type =  str(binascii.hexlify(eth_header[2]))
+    dest_mac = macConvert(str(binascii.hexlify(eth_header[0]))[2:14])
+    src_mac = macConvert(str(binascii.hexlify(eth_header[1]))[2:14])
+    type =  packetType(binascii.hexlify(eth_header[2]))
     ipheader = packet[0][14:34]
     ip_header = struct.unpack("!12s4s4s", ipheader)
     src_ip = socket.inet_ntoa(ip_header[1])
@@ -43,4 +43,13 @@ def return_network():
 def bandwidth():
 
     return None 
+
+def macConvert(mac):
+    return f"{mac[:2]}:{mac[2:4]}:{mac[4:6]}:{mac[6:8]}:{mac[8:10]}:{mac[10:12]}"
+
+def packetType(type):
+    if type == b'0800':
+        return "IP4"
+    else:
+        return str(type)[2:6]
     

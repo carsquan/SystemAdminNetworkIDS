@@ -1,0 +1,7 @@
+matplotlib==3.5.1
+pandas==1.4.1
+pandastable==0.12.2.post1
+pythonping==1.1.1
+scapy==2.4.5
+scapy-python3==0.26
+

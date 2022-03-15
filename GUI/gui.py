@@ -1,4 +1,5 @@
 # !/usr/bin/python3  
+from argparse import Action
 import imp
 from tkinter import *
 from turtle import width  
@@ -15,30 +16,38 @@ import tkinter as tk
 import time
 packetSniffTime = 1
 pingTime = 10000
-height = 640
-width = 930
+height = 720
+width = 1080
 
 class App():
     def __init__(self):
         self.root = tk.Tk()
         self.root.geometry(f"{width}x{height}")
-        self.botFram = Frame(self.root, height=30, width=width)
+        self.botFram = Frame(self.root, height=30, width=width,relief="groove")
+        self.rightFrame = Frame(self.root, height=height, width=width/2)
         self.label = tk.Label(self.botFram,text="")
         self.root.title('Network Monitor')
         self.packetL = tk.Label(self.botFram, text="0.00%")
         self.ping = tk.Label(self.botFram,text="0")
-        #self.label.place(x=width-40,y=height-15,anchor=SW)
-        #self.packetL.place(x=0,y=height-20,anchor=SW)
-        #self.ping.place(x=130,y=height-20)
         self.label.pack(side=RIGHT)
         self.packetL.pack(side=LEFT)
         self.ping.pack(side=LEFT)
         self.df =netinfo.return_network()
-        f = Frame(self.root, height=height, width=width/2)
+        self.f = Frame(self.root, height=height, width=width/2)
+        self.topfram = Frame(self.root, height=30, width=width)
         self.botFram.pack(side=BOTTOM,fill="x")
-        f.pack(fill="y",side=LEFT)
-        self.table = pt = Table(f, dataframe=self.df,showtoolbar=False, showstatusbar=False)
+        
+        self.startBtn = tk.Button(self.topfram, text ="Start", state=DISABLED)
+        self.stopBtn = tk.Button(self.topfram, text ="Stop")
+        self.startBtn.pack(side=LEFT)
+        self.stopBtn.pack(side=LEFT)
+        self.table = pt = Table(self.f, dataframe=self.df,showtoolbar=False, showstatusbar=False)
+        self.topfram.pack(fill="x",side=TOP,expand=True)
+        self.f.pack(fill="both",side=LEFT, expand=True)
+        
+        self.rightFrame.pack(fill="y",side=RIGHT, expand=True)
         pt.show()
+        self.setupBTNS()
         self.update_clock()
         self.updateTable()
         self.updatePKLoss()
@@ -52,7 +61,7 @@ class App():
     def updatePKLoss(self):
         pk = packetLoss()
         new_text = f"Packet Loss: {pk[0]}%"
-        ping = f"Ping: {pk[1]} ms"
+        ping = f"  Latency: {pk[1]} ms"
         self.packetL.configure(text=new_text)
         self.ping.configure(text=ping)
         self.root.after(pingTime, self.updatePKLoss)
@@ -63,10 +72,24 @@ class App():
         self.df =netinfo.return_network()
         self.table.model.df = self.df
         self.root.after(packetSniffTime, self.updateTable)
-    
-    def tableOptions(self):
-        options = config.load_options()
-        #options is a dict that you can set yourself
-        options = {'colheadercolor':'green'}
-        config.apply_options(options, self.table)
 
+    def startPKLoss(self):
+        print("Starting")
+        global packetSniffTime
+        packetSniffTime = 1
+
+        self.updateTable()
+        self.startBtn.configure(state=DISABLED)
+        self.stopBtn.configure(state=ACTIVE)
+
+    def stopPKLoss(self):
+        print("Stopping")
+        global packetSniffTime
+        packetSniffTime = 1000000000000000000
+        self.startBtn.configure(state=ACTIVE)
+        self.stopBtn.configure(state=DISABLED)
+    
+    def setupBTNS(self):
+        self.stopBtn.configure(command= self.stopPKLoss)
+        self.startBtn.configure(command=self.startPKLoss)
+        
