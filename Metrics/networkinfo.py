@@ -2,7 +2,6 @@ from scapy.all import *
 import socket
 import struct
 import binascii
-import asyncio
 import pandas as pd
 from collections import Counter
 
@@ -11,8 +10,8 @@ filepath = "output.csv"
 output = []
 df = pd.DataFrame()
 
-# gives us dest mac, src mac, dest IP, source IP 
-async def sniff():
+# gives us dest mac, src mac, dest IP, source IP    
+def sniff():
     # socket that tell us about the Linux packet interface, that the data is raw, and that we are interested in IP protocol 
     s = socket.socket(socket.PF_PACKET, socket.SOCK_RAW, socket. htons(0x0800))
         # receiving the packet from TCP/UDP
@@ -34,7 +33,7 @@ async def sniff():
         
 def return_network():
     global df
-    output.append(asyncio.run(sniff()))
+    output.append(sniff())
     df = pd.DataFrame(output)
     return df
 

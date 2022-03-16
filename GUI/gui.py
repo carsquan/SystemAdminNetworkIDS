@@ -1,13 +1,18 @@
 # !/usr/bin/python3  
 from argparse import Action
 import imp
-from tkinter import *
+import queue
+import threading
+from tkinter import *   
 from turtle import width  
+import pandas as pd
 from Metrics.packetLoss import packetLoss
 import asyncio
 import Metrics.networkinfo as netinfo
 from pandastable import Table, TableModel
-
+import Metrics.throughput as through
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 #Entering the event main loop  
 
@@ -18,11 +23,14 @@ packetSniffTime = 1
 pingTime = 10000
 height = 720
 width = 1080
+throughputtime = 10000
+uptime = 0
 
 class App():
     def __init__(self):
         self.root = tk.Tk()
         self.root.geometry(f"{width}x{height}")
+
         self.botFram = Frame(self.root, height=30, width=width,relief="groove")
         self.rightFrame = Frame(self.root, height=height, width=width/2)
         self.label = tk.Label(self.botFram,text="")
@@ -32,7 +40,14 @@ class App():
         self.label.pack(side=RIGHT)
         self.packetL.pack(side=LEFT)
         self.ping.pack(side=LEFT)
+        self.gui_queue = queue.Queue()
+
         self.df =netinfo.return_network()
+
+        #Dataframe for throughput
+        self.throughputDF =  pd.DataFrame()
+        
+    
         self.f = Frame(self.root, height=height, width=width/2)
         self.topfram = Frame(self.root, height=30, width=width)
         self.botFram.pack(side=BOTTOM,fill="x")
@@ -42,21 +57,25 @@ class App():
         self.startBtn.pack(side=LEFT)
         self.stopBtn.pack(side=LEFT)
         self.table = pt = Table(self.f, dataframe=self.df,showtoolbar=False, showstatusbar=False)
-        self.topfram.pack(fill="x",side=TOP,expand=True)
+        self.topfram.pack(fill="x",side=TOP)
         self.f.pack(fill="both",side=LEFT, expand=True)
         
-        self.rightFrame.pack(fill="y",side=RIGHT, expand=True)
+        self.rightFrame.pack(fill="both",side=RIGHT, expand=True)
         pt.show()
+        self.makeCanvas()
         self.setupBTNS()
         self.update_clock()
+        self.periodicGuiUpdate()
         self.updateTable()
         self.updatePKLoss()
+        threading.Thread(target=self.start_loop).start()
+        self.updateCanvas()
         self.root.mainloop()
 
     def update_clock(self):
         now = time.strftime("%H:%M")
         self.label.configure(text=now)
-        self.root.after(1000, self.update_clock)
+        #self.root.after(1000, self.update_clock)
     
     def updatePKLoss(self):
         pk = packetLoss()
@@ -64,6 +83,7 @@ class App():
         ping = f"  Latency: {pk[1]} ms"
         self.packetL.configure(text=new_text)
         self.ping.configure(text=ping)
+        self.update_clock()
         self.root.after(pingTime, self.updatePKLoss)
 
 
@@ -92,4 +112,47 @@ class App():
     def setupBTNS(self):
         self.stopBtn.configure(command= self.stopPKLoss)
         self.startBtn.configure(command=self.startPKLoss)
+
+    def makeCanvas(self):
+        fig = Figure(figsize=(5,6), dpi=100)
+        self.ax = fig.add_subplot(111)
+        self.canvas = FigureCanvasTkAgg(fig, master=self.rightFrame)
+        self.throughputDF = through.addUpDownToDF(self.throughputDF,uptime)
+        self.throughputDF.plot(x="time",y="down",ax=self.ax)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().grid(row=0, column=0)
+
+    
+    def updateCanvas(self):
+        self.ax.clear()
+        self.throughputDF.plot(x="time",y="down",ax=self.ax)
+        self.canvas.draw()
+        self.root.after(100, self.updateCanvas)
+        
+
+    async def makePlot(self):
+        global uptime
+        uptime+=throughputtime
+        self.throughputDF = through.addUpDownToDF(self.throughputDF,uptime)
+        print(self.throughputDF)
+        await asyncio.sleep(throughputtime*100)
+
+    def periodicGuiUpdate(self):
+        while True:
+            try:
+                
+                fn = self.gui_queue.get_nowait()
+                print("yo!!")
+            except queue.Empty:
+                break
+            fn()
+        self.root.after(1000, self.periodicGuiUpdate)
+
+    def start_loop(self):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.create_task(self.makePlot())
+        loop.run_forever()
+        
+            
         
