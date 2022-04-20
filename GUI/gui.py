@@ -19,7 +19,7 @@ from matplotlib.figure import Figure
 
 import tkinter as tk
 import time
-packetSniffTime = 1
+packetSniffTime = 10
 pingTime = 10000
 height = 720
 width = 1080
@@ -70,6 +70,7 @@ class App():
         self.updatePKLoss()
         threading.Thread(target=self.start_loop).start()
         self.updateCanvas()
+        self.root.after(6000, self.updateDF)
         self.root.mainloop()
 
     def update_clock(self):
@@ -86,7 +87,7 @@ class App():
         self.update_clock()
         self.root.after(pingTime, self.updatePKLoss)
 
-
+    #Packet Snigg Table
     def updateTable(self):
         self.table.redraw()
         self.df =netinfo.return_network()
@@ -98,9 +99,10 @@ class App():
         global packetSniffTime
         packetSniffTime = 1
 
-        self.updateTable()
+        
         self.startBtn.configure(state=DISABLED)
         self.stopBtn.configure(state=ACTIVE)
+        self.updateTable()
 
     def stopPKLoss(self):
         print("Stopping")
@@ -126,8 +128,9 @@ class App():
     def updateCanvas(self):
         self.ax.clear()
         self.throughputDF.plot(x="time",y="down",ax=self.ax)
+        
         self.canvas.draw()
-        self.root.after(100, self.updateCanvas)
+        self.root.after(6000, self.updateCanvas)
         
 
     async def makePlot(self):
@@ -154,5 +157,8 @@ class App():
         loop.create_task(self.makePlot())
         loop.run_forever()
         
-            
+    def updateDF(self):
+        self.throughputDF = through.addUpDownToDF(self.throughputDF,uptime)
+        self.root.after(6000, self.updateDF)
+
         

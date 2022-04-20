@@ -17,6 +17,5 @@ def packetLoss():
     if not str.success:
         pkt_loss+= 1
 
-    print("asd")
     # returns rate of packet loss
     return [pkt_loss / pkt_total,str.rtt_avg_ms]

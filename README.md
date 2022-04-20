@@ -1,3 +1,3 @@
 # System Admin Network IDS
 
-* To access webpage run command: '  '
+* To access program run command: 'sudo python3 main.py'

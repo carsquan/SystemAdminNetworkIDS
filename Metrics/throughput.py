@@ -1,6 +1,7 @@
 import speedtest  
 import pandas as pd
-
+import datetime
+import time
   
 st = speedtest.Speedtest()
 
@@ -22,15 +23,14 @@ def toMB(speed):
 
 # Adds upload/download to the data set
 def addUpDownToDF(df,time):
+    time_now = datetime.datetime.now().strftime("%H:%M:%S")
     #up = findUpload()
     down = findDownload()
-    lst = []
-    for i in range(time,time+10000):
-        lst.append([down,i])
+    lst = [[down,time_now]]
     newDF = pd.DataFrame(lst,columns=["down","time"])
     if df.empty:
         return newDF
     
-    df = pd.concat([df,newDF])
+    df.loc[len(df.index)] = [down, time_now] 
     return df
 
