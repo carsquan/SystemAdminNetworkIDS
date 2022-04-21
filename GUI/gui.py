@@ -23,6 +23,8 @@ packetSniffTime = 10
 pingTime = 10000
 height = 720
 width = 1080
+dfTime = 60000
+canvasTime = 1000
 throughputtime = 10000
 uptime = 0
 
@@ -59,8 +61,8 @@ class App():
         self.table = pt = Table(self.f, dataframe=self.df,showtoolbar=False, showstatusbar=False)
         self.topfram.pack(fill="x",side=TOP)
         self.f.pack(fill="both",side=LEFT, expand=True)
-        
         self.rightFrame.pack(fill="both",side=RIGHT, expand=True)
+        self.otherDF = df = pd.DataFrame(columns=["Packet Loss","Latency"])
         pt.show()
         self.makeCanvas()
         self.setupBTNS()
@@ -84,6 +86,7 @@ class App():
         ping = f"  Latency: {pk[1]} ms"
         self.packetL.configure(text=new_text)
         self.ping.configure(text=ping)
+        self.updateOtherDF(pk[0],pk[1])
         self.update_clock()
         self.root.after(pingTime, self.updatePKLoss)
 
@@ -130,7 +133,7 @@ class App():
         self.throughputDF.plot(x="time",y="down",ax=self.ax)
         
         self.canvas.draw()
-        self.root.after(6000, self.updateCanvas)
+        self.root.after(canvasTime, self.updateCanvas)
         
 
     async def makePlot(self):
@@ -159,6 +162,10 @@ class App():
         
     def updateDF(self):
         self.throughputDF = through.addUpDownToDF(self.throughputDF,uptime)
-        self.root.after(6000, self.updateDF)
+        self.root.after(dfTime, self.updateDF)
+
+    def updateOtherDF(self,pkLoss,ping):
+        self.otherDF.loc[len(self.otherDF.index)] = [pkLoss, ping] 
+        
 
         
