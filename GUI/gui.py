@@ -13,6 +13,7 @@ from pandastable import Table, TableModel
 import Metrics.throughput as through
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+import datetime
 
 #Entering the event main loop  
 
@@ -62,7 +63,7 @@ class App():
         self.topfram.pack(fill="x",side=TOP)
         self.f.pack(fill="both",side=LEFT, expand=True)
         self.rightFrame.pack(fill="both",side=RIGHT, expand=True)
-        self.otherDF = df = pd.DataFrame(columns=["Packet Loss","Latency"])
+        self.otherDF = df = pd.DataFrame(columns=["Packet Loss","Latency","Time"])
         pt.show()
         self.makeCanvas()
         self.setupBTNS()
@@ -165,7 +166,8 @@ class App():
         self.root.after(dfTime, self.updateDF)
 
     def updateOtherDF(self,pkLoss,ping):
-        self.otherDF.loc[len(self.otherDF.index)] = [pkLoss, ping] 
+        time_now = datetime.datetime.now().strftime("%H:%M:%S")
+        self.otherDF.loc[len(self.otherDF.index)] = [pkLoss, ping,time_now] 
         
 
         
