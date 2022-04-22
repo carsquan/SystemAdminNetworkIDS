@@ -14,12 +14,10 @@ import Metrics.throughput as through
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import datetime
-
-#Entering the event main loop  
-
-
 import tkinter as tk
 import time
+from Policies.anom import *
+
 packetSniffTime = 10
 pingTime = 10000
 height = 720
@@ -34,7 +32,7 @@ class App():
         self.root = tk.Tk()
         self.root.geometry(f"{width}x{height}")
 
-        self.botFram = Frame(self.root, height=30, width=width,relief="groove")
+        self.botFram = Frame(self.root, height=30, width=width,relief="groove") 
         self.rightFrame = Frame(self.root, height=height, width=width/2)
         self.label = tk.Label(self.botFram,text="")
         self.root.title('Network Monitor')
@@ -74,6 +72,8 @@ class App():
         threading.Thread(target=self.start_loop).start()
         self.updateCanvas()
         self.root.after(6000, self.updateDF)
+        self.anomBtn = tk.Button(self.topfram, text ="Anomalies", command=self.createAnomalyPage)
+        self.anomBtn.pack(side=RIGHT)
         self.root.mainloop()
 
     def update_clock(self):
@@ -169,5 +169,18 @@ class App():
         time_now = datetime.datetime.now().strftime("%H:%M:%S")
         self.otherDF.loc[len(self.otherDF.index)] = [pkLoss, ping,time_now] 
         
+    def createAnomalyPage(self):
+        newWindow = tk.Toplevel(self.root)
+        packetLossAnom = str(findOutliers(self.otherDF))
+        downAnom = str(findOutliers(self.throughputDF))
+        packetlossLabel = tk.Label(newWindow, text = "Packet Loss Anomaly's")
+        packlossanom = tk.Label(newWindow, text = packetLossAnom)
 
-        
+        downloadSpeedLabel = tk.Label(newWindow, text = "Download Speed Anomaly's")
+        downloadanom = tk.Label(newWindow, text = downAnom)
+
+        packetlossLabel.pack()
+        packlossanom.pack()
+        downloadSpeedLabel.pack()
+        downloadanom.pack()
+
