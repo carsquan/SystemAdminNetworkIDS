@@ -23,11 +23,11 @@ def toMB(speed):
 
 # Adds upload/download to the data set
 def addUpDownToDF(df,time):
-    time_now = datetime.datetime.now().strftime("%H:%M:%S")
+    time_now = datetime.datetime.now().strftime("%H:%M")
     #up = findUpload()
     down = findDownload()
     lst = [[down,time_now]]
-    newDF = pd.DataFrame(lst,columns=["down","time"])
+    newDF = pd.DataFrame(lst,columns=["X","Time"])
     if df.empty:
         return newDF
     
